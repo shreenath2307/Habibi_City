@@ -102,7 +102,9 @@ export default function App() {
   }
 
   const visible = posts.filter(
-    (p) => categoryFilter === 'all' || p.category === categoryFilter
+    (p) =>
+      (categoryFilter === 'all' || p.category === categoryFilter) &&
+      (routeFilter === 'all' || p.route_id === routeFilter)
   )
 
   const feedProps = {
