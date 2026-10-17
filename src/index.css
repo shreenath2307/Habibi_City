@@ -1,0 +1,368 @@
+:root {
+  --ink: #15130f;
+  --paper: #f7f4ef;
+  --card: #ffffff;
+  --muted: #7b736a;
+  --line: rgba(21, 19, 15, 0.1);
+  --accent: #b4492b;
+  --radius: 22px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.serif {
+  font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+
+.serif em {
+  font-style: italic;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ---------- app shell ---------- */
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 14px 130px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 4px 12px;
+  background: linear-gradient(var(--paper) 72%, rgba(247, 244, 239, 0));
+}
+
+.brand {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+}
+
+.brand span {
+  font-style: italic;
+}
+
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* floating pill nav: bottom on phones, top-centre on wide screens */
+.pillnav {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 1100;
+  display: flex;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(21, 19, 15, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 34px rgba(21, 19, 15, 0.3);
+}
+
+.pillnav button {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 17px;
+  border-radius: 999px;
+  transition: background 0.18s, color 0.18s;
+}
+
+.pillnav button.active {
+  background: #fff;
+  color: var(--ink);
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(150deg, #8ea9c4, #5d6f82 60%, #3c4450);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 26px 22px 24px;
+  color: #fff;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--hero-img);
+  background-size: cover;
+  background-position: center;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 12, 16, 0.18), rgba(10, 12, 16, 0.72));
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 {
+  font-size: clamp(38px, 11vw, 62px);
+  margin: 6px 0 10px;
+}
+
+.hero p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.84);
+  max-width: 42ch;
+}
+
+.hero .eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ---------- cards ---------- */
+
+.card-soft {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 26px;
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: rgba(21, 19, 15, 0.06);
+  color: var(--ink);
+  border: 0;
+}
+
+.chip-practical {
+  background: rgba(180, 73, 43, 0.12);
+  color: var(--accent);
+}
+
+.chip-observation {
+  background: rgba(60, 94, 72, 0.12);
+  color: #3c5e48;
+}
+
+.status-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+
+.status-row:first-of-type {
+  border-top: 0;
+}
+
+.status-name {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 21px;
+}
+
+.status-value {
+  font-size: 13px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.status-value strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.post-body {
+  font-size: 15.5px;
+  line-height: 1.5;
+  margin: 10px 0 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.letter-body {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 20px;
+  line-height: 1.38;
+}
+
+.linkbtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.linkbtn:hover {
+  color: var(--ink);
+}
+
+.linkbtn.on {
+  color: var(--accent);
+}
+
+.comment {
+  border-left: 2px solid var(--line);
+  padding: 2px 0 2px 11px;
+  margin-top: 9px;
+  font-size: 13.5px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- forms ---------- */
+
+.form-control,
+.form-select {
+  border-radius: 13px;
+  border-color: var(--line);
+  font-size: 15px;
+  padding: 11px 13px;
+  background-color: #fff;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ink);
+  box-shadow: none;
+}
+
+.btn-ink {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 0;
+}
+
+.btn-ink:hover,
+.btn-ink:focus {
+  background: #2d2922;
+  color: #fff;
+}
+
+.btn-ink:disabled,
+.btn-ink.disabled {
+  background: var(--ink);
+  color: #fff;
+  opacity: 0.35;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 6px;
+  background: rgba(21, 19, 15, 0.05);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.toggle-group button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.toggle-group button.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(21, 19, 15, 0.12);
+}
+
+/* ---------- map ---------- */
+
+.leaflet-container {
+  height: 48vh;
+  min-height: 300px;
+  width: 100%;
+  border-radius: 18px;
+  z-index: 0;
+}
+
+@media (min-width: 768px) {
+  .pillnav {
+    top: 16px;
+    bottom: auto;
+  }
+
+  .app {
+    padding-bottom: 60px;
+    padding-top: 10px;
+  }
+
+  .topbar {
+    top: 0;
+    padding-top: 22px;
+  }
+}
