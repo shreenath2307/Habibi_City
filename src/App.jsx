@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   addComment,
   checkText,
@@ -14,14 +15,22 @@ import {
   statusByRoute,
   configured,
 } from './lib'
-import { Hero, PostCard, StatusBoard } from './components'
-import { LettersScreen, MapScreen, WriteScreen } from './screens'
+import { DepartureTicker } from './components/DepartureTicker'
+import { SkylineHero } from './components/SkylineHero'
+import { PunchCardStreak } from './components/PunchCardStreak'
+import { MetroStatusBoard } from './components/MetroStatusBoard'
+import { PostCard } from './components/PostCard'
+import { DesktopCursor } from './components/DesktopCursor'
+import { WriteScreen } from './screens/WriteScreen'
+import { LettersScreen } from './screens/LettersScreen'
+import { MapScreen } from './screens/MapScreen'
+import { triggerHaptic } from './theme'
 
 const TABS = [
-  ['feed', 'Feed'],
-  ['write', 'Write'],
-  ['letters', 'Letters'],
-  ['map', 'Map'],
+  ['feed', 'Feed', '⚡'],
+  ['write', 'Write', '✎'],
+  ['letters', 'Letters', '✉'],
+  ['map', 'Map', '⌖'],
 ]
 
 export default function App() {
@@ -32,21 +41,23 @@ export default function App() {
   const [likes, setLikes] = useState({ counts: {}, mine: new Set() })
   const [commentsByPost, setCommentsByPost] = useState({})
   const [streak, setStreak] = useState(getStreak) // resets to 0 if a day was missed
-  const [routeFilter, setRouteFilter] = useState('')
+  const [routeFilter, setRouteFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(() => configured)
 
   useEffect(() => {
     getDeviceId()
     if (!configured) return
+
     Promise.all([fetchRoutes(), fetchStations()])
       .then(([r, s]) => {
         setRoutes(r)
         setStations(s)
-        setRouteFilter((f) => f || r[0]?.id || 'all')
       })
       .catch((e) => setError(e.message))
-    loadPosts()
+
+    loadPosts().finally(() => setLoading(false))
   }, [])
 
   async function loadPosts() {
@@ -71,12 +82,26 @@ export default function App() {
 
   async function onLike(postId) {
     if (likes.mine.has(postId)) return
-    await likePost(postId)
+    // Optimistic like
     setLikes((prev) => {
       const mine = new Set(prev.mine)
       mine.add(postId)
       return { counts: { ...prev.counts, [postId]: (prev.counts[postId] || 0) + 1 }, mine }
     })
+
+    try {
+      await likePost(postId)
+    } catch {
+      // Visibly rollback if request fails
+      setLikes((prev) => {
+        const mine = new Set(prev.mine)
+        mine.delete(postId)
+        return {
+          counts: { ...prev.counts, [postId]: Math.max(0, (prev.counts[postId] || 1) - 1) },
+          mine,
+        }
+      })
+    }
   }
 
   // Returns an error message to show inline, or null on success.
@@ -117,103 +142,225 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <div className="topbar">
-        <span className="brand">
-          Habibi <span>City</span>
-        </span>
-        <span className="streak">Commute streak: {streak} days</span>
-      </div>
+    <div className="app-shell">
+      {/* Desktop-only custom trailing ring cursor */}
+      <DesktopCursor />
 
+      {/* Transit Header with Departure Ticker and Commuter Stamp Punch Card */}
+      <header className="transit-header">
+        <div className="topbar-main">
+          <div className="brand-stamp">
+            <span className="brand-stamp-icon">H</span>
+            <div>
+              <span className="brand-stamp-title">
+                HABIBI <span>CITY</span>
+              </span>
+              <span className="brand-station-tag ms-2">TRANSIT DISPATCH</span>
+            </div>
+          </div>
+
+          <PunchCardStreak streak={streak} activeTab={tab} />
+        </div>
+
+        <DepartureTicker posts={posts} />
+      </header>
+
+      {/* Missing configuration notice */}
       {!configured && (
-        <div className="alert alert-warning rounded-4 small">
-          Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to{' '}
-          <code>.env</code>, then restart <code>npm run dev</code>.
+        <div className="transit-notice transit-notice-warning" role="alert">
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <div>
+            <strong>SUPABASE CREDENTIALS REQUIRED</strong>
+            <p className="mb-0 mt-1 small">
+              Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to{' '}
+              <code>.env</code>, then restart <code>npm run dev</code>.
+            </p>
+          </div>
         </div>
       )}
 
-      {error && <div className="alert alert-danger rounded-4 small">{error}</div>}
-
-      {tab === 'feed' && (
-        <>
-          <Hero
-            eyebrow="Anonymous, route by route"
-            title="Notes from the"
-            italic="commute"
-            sub="What the city is like right now, told by the people riding through it."
-            img="https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=70"
-          />
-
-          <StatusBoard
-            routes={routes}
-            statuses={statuses}
-            routeFilter={routeFilter}
-            onRouteFilter={setRouteFilter}
-          />
-
-          <div className="toggle-group mb-3">
-            {['all', 'practical', 'observation'].map((c) => (
-              <button
-                key={c}
-                className={categoryFilter === c ? 'active' : ''}
-                onClick={() => setCategoryFilter(c)}
-              >
-                {c === 'all' ? 'Everything' : c[0].toUpperCase() + c.slice(1)}
-              </button>
-            ))}
+      {/* Inline system error notice */}
+      {error && (
+        <div className="transit-notice transit-notice-danger" role="alert">
+          <span style={{ fontSize: 18 }}>🛑</span>
+          <div>
+            <strong>DISPATCH DISRUPTION</strong>
+            <p className="mb-0 mt-1 small">{error}</p>
           </div>
-
-          {visible.length === 0 && <p className="text-muted small">No posts yet.</p>}
-          {visible.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              routeName={routesById[p.route_id]}
-              likeCount={likes.counts[p.id] || 0}
-              liked={likes.mine.has(p.id)}
-              comments={commentsByPost[p.id] || []}
-              onLike={onLike}
-              onComment={onComment}
-              onReport={onReport}
-              onReportComment={feedProps.onReportComment}
-            />
-          ))}
-        </>
+        </div>
       )}
 
-      {tab === 'write' && (
-        <WriteScreen
-          routes={routes}
-          stations={stations}
-          onPosted={(newStreak) => {
-            if (newStreak !== null) setStreak(newStreak)
-            loadPosts()
-            setTab('feed')
-          }}
-        />
-      )}
-
-      {tab === 'letters' && <LettersScreen />}
-
-      {tab === 'map' && (
-        <MapScreen
-          stations={stations}
-          posts={posts}
-          routesById={routesById}
-          feedProps={feedProps}
-        />
-      )}
-
-      <nav className="pillnav">
-        {TABS.map(([key, label]) => (
-          <button
-            key={key}
-            className={tab === key ? 'active' : ''}
-            onClick={() => setTab(key)}
+      {/* Screen Views with Animated Tab Transitions */}
+      <AnimatePresence mode="wait">
+        {tab === 'feed' && (
+          <motion.main
+            key="feed"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
           >
-            {label}
-          </button>
-        ))}
+            <SkylineHero
+              eyebrow="ANONYMOUS • ROUTE BY ROUTE"
+              title="NOTES FROM THE"
+              italic="commute"
+              sub="What the city is like right now, broadcast live by the people riding through it."
+            />
+
+            <MetroStatusBoard
+              routes={routes}
+              statuses={statuses}
+              routeFilter={routeFilter}
+              onRouteFilter={setRouteFilter}
+            />
+
+            {/* Category Filter Rail */}
+            <div className="filter-rail" aria-label="Filter dispatches by type">
+              {[
+                ['all', 'Everything', '✦'],
+                ['practical', 'Practical', '⚡'],
+                ['observation', 'Observation', '👁'],
+              ].map(([c, label, icon]) => (
+                <button
+                  key={c}
+                  className={`filter-btn ${categoryFilter === c ? 'active' : ''}`}
+                  onClick={() => {
+                    setCategoryFilter(c)
+                    triggerHaptic('light')
+                  }}
+                >
+                  <span style={{ marginRight: 6 }}>{icon}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {visible.length === 0 && !loading && (
+              <div className="transit-card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: 44, marginBottom: 10 }}>🚇</div>
+                <h3 className="signage-heading" style={{ fontSize: 22, margin: '0 0 6px' }}>
+                  NO POSTS YET ON THIS LINE
+                </h3>
+                <p className="text-muted small mb-3">
+                  Be the first commuter to drop a live report or observation.
+                </p>
+                <button
+                  className="filter-btn active"
+                  onClick={() => {
+                    setTab('write')
+                    triggerHaptic('medium')
+                  }}
+                >
+                  POST A REPORT ↵
+                </button>
+              </div>
+            )}
+
+            {/* Staggered Post Feed */}
+            {visible.map((p, index) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, delay: Math.min(index * 0.05, 0.4) }}
+              >
+                <PostCard
+                  post={p}
+                  routeName={routesById[p.route_id]}
+                  likeCount={likes.counts[p.id] || 0}
+                  liked={likes.mine.has(p.id)}
+                  comments={commentsByPost[p.id] || []}
+                  onLike={onLike}
+                  onComment={onComment}
+                  onReport={onReport}
+                  onReportComment={feedProps.onReportComment}
+                />
+              </motion.div>
+            ))}
+          </motion.main>
+        )}
+
+        {tab === 'write' && (
+          <motion.main
+            key="write"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+          >
+            <WriteScreen
+              routes={routes}
+              stations={stations}
+              onPosted={(newStreak) => {
+                if (newStreak !== null) setStreak(newStreak)
+                loadPosts()
+                setTab('feed')
+              }}
+            />
+          </motion.main>
+        )}
+
+        {tab === 'letters' && (
+          <motion.main
+            key="letters"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+          >
+            <LettersScreen />
+          </motion.main>
+        )}
+
+        {tab === 'map' && (
+          <motion.main
+            key="map"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+          >
+            <MapScreen
+              stations={stations}
+              posts={posts}
+              routesById={routesById}
+              feedProps={feedProps}
+            />
+          </motion.main>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Pill Navigation */}
+      <nav className="floating-nav-container" aria-label="Main Transit Navigation">
+        <div className="floating-pill-nav">
+          {TABS.map(([key, label, icon]) => {
+            const isActive = tab === key
+            return (
+              <button
+                key={key}
+                className={`nav-tab-btn ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setTab(key)
+                  triggerHaptic('light')
+                }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activePillIndicator"
+                    className="nav-active-indicator"
+                    style={{ inset: 0 }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 3, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </nav>
     </div>
   )
