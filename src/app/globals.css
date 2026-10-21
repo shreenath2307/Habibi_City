@@ -1,0 +1,100 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: var(--rule-subtle);
+  }
+
+  html {
+    background-color: var(--bg-app);
+    color: var(--ink-primary);
+    font-family: var(--font-eb-garamond), Garamond, Georgia, serif;
+    font-size: 17px;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--bg-app);
+    color: var(--ink-primary);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Static subtle paper texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* Victorian double rules */
+  .double-rule {
+    border-top: 3px double var(--rule-color);
+    margin: 1.5rem 0;
+  }
+
+  .double-rule-thick {
+    border-top: 3px solid var(--rule-color);
+    border-bottom: 1px solid var(--rule-color);
+    height: 6px;
+    margin: 1.5rem 0;
+  }
+
+  .thin-rule {
+    border-top: 1px solid var(--rule-color);
+    margin: 1rem 0;
+  }
+
+  /* Drop caps for letters */
+  .drop-cap::first-letter {
+    font-family: var(--font-playfair), Georgia, serif;
+    font-size: 3.4em;
+    float: left;
+    line-height: 0.82;
+    margin-right: 0.15em;
+    margin-top: 0.08em;
+    color: var(--ink-primary);
+    font-weight: 700;
+  }
+
+  /* Small caps typography */
+  .small-caps {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
+  }
+
+  /* Accessible button reset & min tap target */
+  button, a {
+    touch-action: manipulation;
+  }
+
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--accent-brass);
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

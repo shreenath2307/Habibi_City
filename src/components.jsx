@@ -1,6 +1,0 @@
-export { SkylineHero as Hero } from './components/SkylineHero'
-export { MetroStatusBoard as StatusBoard } from './components/MetroStatusBoard'
-export { PostCard } from './components/PostCard'
-export { DepartureTicker } from './components/DepartureTicker'
-export { PunchCardStreak } from './components/PunchCardStreak'
-export { DesktopCursor } from './components/DesktopCursor'

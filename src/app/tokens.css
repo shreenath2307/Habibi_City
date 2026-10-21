@@ -1,0 +1,100 @@
+:root,
+[data-theme="paper"] {
+  --bg-app: #F4EEDF;
+  --bg-subtle: #ECE4D0;
+  --surface-card: #FBF7EC;
+  --surface-elevated: #FFFFFF;
+  --surface-tint: #F3ECE0;
+
+  --ink-primary: #1F1A14;
+  --ink-secondary: #5B5043;
+  --ink-muted: #8C7F70;
+  --ink-faint: #B5A898;
+
+  --rule-color: rgba(31, 26, 20, 0.85);
+  --rule-subtle: rgba(31, 26, 20, 0.20);
+  --rule-dashed: rgba(31, 26, 20, 0.35);
+
+  --accent-oxblood: #7A1F2B;
+  --accent-green: #1F4D3A;
+  --accent-navy: #1D2B4A;
+  --accent-brass: #A67C2E;
+  --accent-plum: #4A203B;
+
+  /* Route Heritage Inks */
+  --route-line-1: #7A1F2B; /* Oxblood */
+  --route-line-2: #1D2B4A; /* Royal Navy */
+  --route-line-3: #1F4D3A; /* Bottle Green */
+  --route-line-4: #A67C2E; /* Antique Brass */
+  --route-line-5: #4A203B; /* Heritage Plum */
+
+  /* Status Colors */
+  --status-delay: #7A1F2B;
+  --status-delay-bg: rgba(122, 31, 43, 0.08);
+  --status-delay-border: #7A1F2B;
+
+  --status-crowd: #A67C2E;
+  --status-crowd-bg: rgba(166, 124, 46, 0.10);
+  --status-crowd-border: #A67C2E;
+
+  --status-safety: #4A203B;
+  --status-safety-bg: rgba(74, 32, 59, 0.08);
+  --status-safety-border: #4A203B;
+
+  --status-clear: #1F4D3A;
+  --status-clear-bg: rgba(31, 77, 58, 0.08);
+  --status-clear-border: #1F4D3A;
+
+  --shadow-soft: 0 2px 4px rgba(31, 26, 20, 0.04), 0 1px 2px rgba(31, 26, 20, 0.03);
+  --shadow-card: 0 2px 8px -1px rgba(31, 26, 20, 0.06), 0 1px 3px rgba(31, 26, 20, 0.04);
+}
+
+[data-theme="candlelit"] {
+  --bg-app: #16120D;
+  --bg-subtle: #1C1711;
+  --surface-card: #1F1912;
+  --surface-elevated: #282119;
+  --surface-tint: #231C14;
+
+  --ink-primary: #EFE6D2;
+  --ink-secondary: #A89F91;
+  --ink-muted: #7E7569;
+  --ink-faint: #564E44;
+
+  --rule-color: rgba(239, 230, 210, 0.55);
+  --rule-subtle: rgba(239, 230, 210, 0.15);
+  --rule-dashed: rgba(239, 230, 210, 0.28);
+
+  --accent-oxblood: #9E3240;
+  --accent-green: #2A6B51;
+  --accent-navy: #2C3F6D;
+  --accent-brass: #C2933C;
+  --accent-plum: #6B3256;
+
+  /* Route Heritage Inks (Dark) */
+  --route-line-1: #9E3240;
+  --route-line-2: #3E5A99;
+  --route-line-3: #2A6B51;
+  --route-line-4: #C2933C;
+  --route-line-5: #8C4772;
+
+  /* Status Colors (Dark) */
+  --status-delay: #C74555;
+  --status-delay-bg: rgba(199, 69, 85, 0.12);
+  --status-delay-border: #C74555;
+
+  --status-crowd: #C2933C;
+  --status-crowd-bg: rgba(194, 147, 60, 0.12);
+  --status-crowd-border: #C2933C;
+
+  --status-safety: #8C4772;
+  --status-safety-bg: rgba(140, 71, 114, 0.12);
+  --status-safety-border: #8C4772;
+
+  --status-clear: #2A6B51;
+  --status-clear-bg: rgba(42, 107, 81, 0.12);
+  --status-clear-border: #2A6B51;
+
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
