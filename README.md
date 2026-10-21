@@ -1,104 +1,139 @@
-# Habibi City
+# Habibi City — Notes from the Commute
 
-*Transit Signage meets Risograph Zine* — an anonymous, route-by-route community dispatch app for city commuters.
-
----
-
-## Art Direction & Visual Language
-
-- **Transit Signage & Departure Aesthetics**: Bold line colors, route indicators, station dots, split-flap / scrolling departure-board tickers, and monospace timetables.
-- **Risograph Zine Print Texture**: Paper grain noise overlay, subtle print misregistration shadows on hero signage, ticket perforations, and punch-card stamp slots.
-- **Dynamic Solar Skyline**: Canvas-driven parallax city skyline that synchronizes with the user's local solar time (Dawn, Day, Sunset/Dusk, Midnight) with desktop cursor tracking and mobile scroll parallax.
-- **Dual Day & Night System**: High-contrast warm recycled newsprint (`#F5F2EB`) by day and deep subway tunnel ink (`#0E0F13`) by night, automatically following system `prefers-color-scheme`.
+*A Victorian railway timetable & broadsheet newspaper community dispatch application.*
 
 ---
 
-## Signature Interactions
+## Overview
 
-1. **Procedural Local-Time Skyline Hero**: Canvas vector skyline with stars, moon/sun, animated elevated metro train, and architectural silhouettes shifting colors based on local clock hours.
-2. **Live Metro Schematic Diagram**: Interactive subway diagram where station nodes pulse in real time with line status colors (delay, crowding, safety, all clear) and line tracks animate in on mount.
-3. **Split-Flap Departure Ticker**: Real-time ticker ribbon at the top of every screen streaming the latest community reports.
-4. **Collectible Commuter Punch Card**: Retro punch-card ticket tracking daily streaks with physical stamp animations, haptic taps, and risograph confetti/ink-splatter explosions at 3, 7, and 30-day milestones.
-5. **Interactive Post Cards**: Colored left edge spine corresponding to route line, double-tap & hold heart bursts for likes, swipe gesture revealing the Report action, pointer spotlight highlight on desktop, and spring-expanding comment trays.
-6. **Tactile Sticker Compose (Write Screen)**: Tag selectors styled as punchy tactile stickers, dynamic card tinting matching the active tag, circular SVG progress ring tracking 280 characters, and ticket-ejection submit animation.
-7. **Folded Envelope Letters**: Unsent letters to the city styled as air-mail stationery that unfold on tap into literary `Instrument Serif` typography, with background drifting paper planes and destination boarding tabs.
-8. **Transit Geometry Map**: Custom pulsing SVG station pins, CARTO Positron/Dark basemap matching the active color theme, smooth fly-to camera on station click, and arrival manifest popups.
-9. **Floating Pill Navigation**: Bottom on mobile, top-centered on desktop with an animated spring active indicator and mobile haptic ticks (`navigator.vibrate`).
-10. **Desktop Spotlight & Cursor**: Trailing ring cursor and pointer spotlight on cards that automatically disable on touch devices (`@media (hover: hover) and (pointer: fine)`).
+**Habibi City** is an anonymous, route-by-route community dispatch app for city commuters. Travellers share real-time reports about transit routes (*"delay"*, *"crowded"*, *"all clear"*) alongside quieter observations (*"kindness"*, *"small moments"*, *"vibes"*). The application also features a *"Letters to the city"* broadsheet archive, an interactive transit geometry map, and a physical-style commuter punch-card streak.
+
+- **No accounts or signups**: Post and read immediately.
+- **No geolocation or GPS tracking**: Stations and routes are selected manually.
+- **Local identity**: Anonymous randomized UUID stored exclusively in your browser's `localStorage`.
+- **Community moderation**: Automated abuse filters, crisis helpline detection, and a 3-report threshold that automatically hides items server-side.
+
+---
+
+## Tech Stack & Architecture
+
+- **Framework**: Next.js 15 (App Router) + Strict TypeScript
+- **Styling**: Tailwind CSS with design tokens defined as CSS variables in `src/app/tokens.css`
+- **Art Direction**: Victorian Broadsheet & Railway Timetable
+  - **Light "Paper" Theme**: `#F4EEDF` (aged cream), `#FBF7EC` (stationery), `#1F1A14` (printer's ink), thin double rules (`3px` + `1px`), and static SVG paper noise.
+  - **Dark "Candlelit" Theme**: `#16120D` (candlelit deep night), `#1F1912`, `#EFE6D2`.
+  - **Heritage Route Inks**: Oxblood (`#7A1F2B`), Royal Navy (`#1D2B4A`), Bottle Green (`#1F4D3A`), Antique Brass (`#A67C2E`), and Heritage Plum (`#4A203B`).
+- **Typography (`next/font`)**:
+  - `Playfair Display`: Masthead and broadsheet headlines
+  - `EB Garamond`: Body and UI text (≥ 17px)
+  - `Cormorant Garamond`: Literary letters and long-form reading
+  - `Courier Prime`: Monospace timetables, timestamps, and ticker ribbon
+- **Animation**: Motion (`motion/react`) for layout transitions and gestures; Lenis for smooth scrolling (with automatic `prefers-reduced-motion` bypass).
+- **Data & State**: TanStack Query (`@tanstack/react-query`) for Supabase data caching and optimistic mutations; Supabase JS client.
+- **Map**: Leaflet + `react-leaflet` with locally bundled CSS (no external CDN), sepia/ink-wash Carto tiles, and custom brass-and-ink SVG station pins.
+- **Testing**: Vitest unit test suite covering client moderation, streak calculations, and 60-minute route condition aggregations.
 
 ---
 
 ## File Structure
 
 ```
-Habibi_City-main/
-├── src/
-│   ├── lib.js                      # Untouched data logic, moderation (checkText), Supabase queries, streak logic
-│   ├── theme.js                    # Deterministic 5-line palette, status metadata, and haptic utilities
-│   ├── index.css                   # Custom design tokens, typography, riso paper grain, and responsive layout
-│   ├── components/
-│   │   ├── DepartureTicker.jsx     # Scrolling live dispatch ribbon
-│   │   ├── SkylineHero.jsx         # Procedural solar sky + parallax skyline canvas
-│   │   ├── PunchCardStreak.jsx     # Collectible commuter punch card & ink celebration
-│   │   ├── MetroStatusBoard.jsx    # Live schematic metro diagram with pulsing nodes
-│   │   ├── PostCard.jsx            # Line-spine card with double-tap heart burst & swipe-to-report
-│   │   └── DesktopCursor.jsx       # Fine-pointer trailing ring cursor
-│   ├── screens/
-│   │   ├── WriteScreen.jsx         # Tactile sticker compose with character gauge & ticket print
-│   │   ├── LettersScreen.jsx       # Folded airmail envelopes & drifting planes
-│   │   └── MapScreen.jsx           # CARTO theme tiles, pulsing SVG pins & smooth fly-to
-│   ├── App.jsx                     # Shell, tab orchestration, and shared layout animations
-│   ├── main.jsx                    # Entry point
-│   ├── components.jsx              # Re-export bridge for modular components
-│   └── screens.jsx                 # Re-export bridge for modular screens
-└── package.json
+src/
+├── app/
+│   ├── layout.tsx            # Broadsheet layout with Masthead, ClassicNav, and Providers
+│   ├── page.tsx              # Front Page: 12-col grid, Line Conditions, Ticker, Feed, Ticket Rail
+│   ├── write/page.tsx        # Structured 2-step compose, live preview, postcard franked submit
+│   ├── letters/page.tsx      # Broadsheet letters, wax-seal unfold, compose modal
+│   ├── map/page.tsx          # Leaflet map with local CSS, brass pins, Arrival Manifest
+│   ├── about/page.tsx        # Manifesto, anonymity promise, moderation rules, crisis resources
+│   ├── globals.css           # Typography resets, double rules, paper texture
+│   ├── tokens.css            # CSS variable tokens for Paper and Candlelit themes
+│   ├── loading.tsx           # Global railway loading skeleton
+│   └── error.tsx             # Global service interruption boundary
+├── components/
+│   ├── board/
+│   │   ├── DepartureRibbon.tsx # Pausable split-flap dispatch ticker ribbon
+│   │   └── LineConditions.tsx  # Timetable status diagram with 60-min report counts
+│   ├── feed/
+│   │   ├── SlimHeroStrip.tsx   # Dismissible "How it works" 3-step guide
+│   │   ├── FilterRail.tsx      # Segmented category control and route filter chips
+│   │   ├── PostCard.tsx        # Card with route-colored left rule, like/comment/report
+│   │   └── CommentTray.tsx     # Expandable notes tray with inline moderation
+│   ├── ticket/
+│   │   ├── CommuterTicket.tsx  # 7-slot punch card with 3/7/30 milestone badges
+│   │   └── SidebarRail.tsx     # Sticky desktop rail: Ticket, Safety note, About link
+│   ├── map/
+│   │   └── TransitMap.tsx      # Dynamic Leaflet component with sepia tiles and brass pins
+│   ├── masthead/
+│   │   ├── Masthead.tsx        # Nameplate in Playfair, engraved railway crest, date line
+│   │   └── ThemeToggle.tsx     # Sun/Flame theme switcher
+│   ├── nav/
+│   │   └── ClassicNav.tsx      # Desktop top bar, mobile bottom bar with ink indicator
+│   └── ui/
+│       ├── DoubleRule.tsx      # 3px + 1px Victorian rule
+│       └── Fleuron.tsx         # Typographic ornaments (❦, ❧, ※)
+├── lib/
+│   ├── supabase.ts           # Typed client supporting NEXT_PUBLIC_ and legacy VITE_ env vars
+│   ├── queries.ts            # TanStack Query hooks with optimistic updates and rollbacks
+│   ├── moderation.ts         # checkText abuse filter and crisis detection
+│   ├── moderation.test.ts    # Vitest unit tests for moderation
+│   ├── streak.ts             # Local date calculations, missed-day reset, streak bump
+│   ├── streak.test.ts        # Vitest unit tests for streak
+│   ├── status.ts             # statusByRoute 60-min window calculation and timeAgo
+│   ├── status.test.ts        # Vitest unit tests for statusByRoute
+│   ├── device.ts             # Anonymous UUID generator
+│   ├── themeConstants.ts     # Heritage line colors and status metadata
+│   └── fonts.ts              # next/font configurations
+└── types/
+    └── database.ts           # Strict TypeScript interfaces
 ```
-
----
-
-## Dependencies
-
-### New Dependencies Added
-- **`motion` (`^12.x`)**: Lightweight, high-performance animation engine for React 19 powering shared-layout tab transitions, spring gestures, ticket stamp animations, and card reveals.
-
-### Existing Core Dependencies
-- `react` & `react-dom` (`^19.2.x`)
-- `@supabase/supabase-js` (`^2.118.x`)
-- `leaflet` (`^1.9.4`) & `react-leaflet` (`^5.0.0`)
-- `vite` (`^8.3.x`)
-- `oxlint` (`^1.81.x`)
-
-*Note: The external Bootstrap 5.3 CDN was removed and replaced with clean, zero-bloat custom design tokens in `src/index.css`.*
 
 ---
 
 ## Setup & Running
 
-1. Populate your Supabase credentials in `.env`:
-   ```bash
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-4. Verify linter and production build:
-   ```bash
-   npm run lint
-   npm run build
-   ```
+### 1. Environment Configuration
+
+Copy `.env.example` to `.env` and insert your Supabase project credentials:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Legacy Vite variable names are also supported automatically:
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+```
+
+The app will start at `http://localhost:3000`.
+
+### 4. Run Quality Checks & Tests
+
+```bash
+# Run strict TypeScript type check
+npm run check
+
+# Run Vitest unit tests
+npm run test
+
+# Run Next.js production build
+npm run build
+```
 
 ---
 
-## Privacy & Identity
+## Database & Backend Schema
 
-Habibi City remains completely anonymous:
-- No accounts, logins, or tracking cookies.
-- No GPS / geolocation APIs (stations are chosen manually or explored via static map pins).
-- Device identity is a randomized local UUID stored solely in `localStorage` to prevent duplicate likes and track spam reports.
-- All community text passes through automated moderation and crisis helpline detection.
+The Supabase database schema (`supabase/schema.sql`) contains tables for `routes`, `stations`, `posts`, `reactions`, `comments`, and `reports`, protected by Row Level Security (RLS) and the `handle_report()` trigger which automatically hides any item receiving 3 community reports.
